@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Token<'a> {
     /// Function identifier e.g. `@any`.
     ///
