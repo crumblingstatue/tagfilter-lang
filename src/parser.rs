@@ -86,15 +86,13 @@ fn parse_fn_params<'tvec, 'src: 'tvec>(
 ) -> Result<Vec<Requirement<'src>>, ParseError<'src>> {
     let mut reqs = Vec::new();
     loop {
-        match tokens.next() {
-            Some(tok) => match tok {
-                Token::FunIdent(name) => {
-                    reqs.push(Requirement::FnCall(parse_fn_call(name, tokens)?))
-                }
-                Token::Tag(name) => reqs.push(Requirement::Tag(name)),
-                Token::LBracket => return Err(ParseError::UnexpectedToken(Token::LBracket)),
-                Token::RBracket => return Ok(reqs),
-            },
+        match tokens.peek() {
+            Some(Token::RBracket) => {
+                // Consume the bracket
+                tokens.next().unwrap();
+                return Ok(reqs);
+            }
+            Some(_) => reqs.push(parse_requirement(tokens)?),
             None => return Err(ParseError::UnexpectedEnd),
         }
     }
