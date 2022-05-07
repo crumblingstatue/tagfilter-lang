@@ -40,21 +40,26 @@ pub fn parse<'tvec, 'src: 'tvec>(
 ) -> Result<Vec<Requirement<'src>>, ParseError<'src>> {
     let mut tokens = tokens.iter().peekable();
     let mut reqs = Vec::new();
-    while let Some(tok) = tokens.next() {
-        match tok {
-            Token::FunIdent(name) => {
-                reqs.push(Requirement::FnCall(parse_fn_call(name, &mut tokens)?))
-            }
-            Token::Tag(name) => reqs.push(Requirement::Tag(name)),
-            tok @ (Token::LBracket | Token::RBracket) => {
-                return Err(ParseError::UnexpectedToken(*tok))
-            }
-        }
+    while tokens.peek().is_some() {
+        reqs.push(parse_requirement(&mut tokens)?);
     }
     Ok(reqs)
 }
 
 type Iter<'tvec, 'src> = Peekable<std::slice::Iter<'tvec, Token<'src>>>;
+
+fn parse_requirement<'tvec, 'src: 'tvec>(
+    tokens: &mut Iter<'tvec, 'src>,
+) -> Result<Requirement<'src>, ParseError<'src>> {
+    match tokens.next() {
+        Some(tok) => match tok {
+            Token::FunIdent(name) => Ok(Requirement::FnCall(parse_fn_call(name, tokens)?)),
+            Token::Tag(name) => Ok(Requirement::Tag(name)),
+            tok @ (Token::LBracket | Token::RBracket) => Err(ParseError::UnexpectedToken(*tok)),
+        },
+        None => Err(ParseError::UnexpectedEnd),
+    }
+}
 
 fn parse_fn_call<'tvec, 'src: 'tvec>(
     name: &'src str,
