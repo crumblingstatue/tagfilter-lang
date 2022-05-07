@@ -1,7 +1,7 @@
-use parser::{ParseError, Requirement};
-
 mod parser;
 mod tokenizer;
+
+pub use parser::{ParseError, Requirement};
 
 /// Parse a text input into a requirement tree
 pub fn parse(input: &str) -> Result<Vec<Requirement>, ParseError> {
