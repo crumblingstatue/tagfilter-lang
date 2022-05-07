@@ -17,7 +17,7 @@ a tag can be anything that doesn't begin with the characters `@` or `!`,
 and doesn't contain any spaces or `[`/`]`.
 
 Valid examples:
-```
+```text
 hello-world
 hello@i@am@a@tag
 brick(character)
@@ -28,7 +28,7 @@ brick(character)
 `!` followed by a requirement negates that requirement.
 
 Examples:
-```
+```text
 # Matches anything that isn't tagged foo
 !foo
 # Matches anything that isn't tagged both foo and bar
@@ -44,7 +44,7 @@ Functions are defined by the application that embeds tagfilter-lang.
 
 ## Examples
 
-```
+```text
 # Matches the tag bicycle
 bicycle
 # Matches everything that isn't tagged bicycle
