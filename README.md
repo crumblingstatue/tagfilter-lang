@@ -32,7 +32,7 @@ Examples:
 # Matches anything that isn't tagged foo
 !foo
 # Matches anything that isn't tagged both foo and bar
-!@all(foo bar)
+!@all[foo bar]
 ```
 
 ### function call
