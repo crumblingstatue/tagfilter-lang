@@ -24,6 +24,8 @@ pub enum Requirement<'a> {
     Tag(&'a str),
     /// Function call requirement like `@myfun[param1 param2]`
     FnCall(FnCall<'a>),
+    /// Negate the results of the child requirement
+    Not(Box<Requirement<'a>>),
 }
 
 /// A function call requirement
@@ -55,6 +57,7 @@ fn parse_requirement<'tvec, 'src: 'tvec>(
         Some(tok) => match tok {
             Token::FunIdent(name) => Ok(Requirement::FnCall(parse_fn_call(name, tokens)?)),
             Token::Tag(name) => Ok(Requirement::Tag(name)),
+            Token::Not => Ok(Requirement::Not(Box::new(parse_requirement(tokens)?))),
             tok @ (Token::LBracket | Token::RBracket) => Err(ParseError::UnexpectedToken(*tok)),
         },
         None => Err(ParseError::UnexpectedEnd),
@@ -104,6 +107,11 @@ fn test_parse() {
     assert_eq!(
         parse(&[Token::Tag("foo")]).as_deref(),
         Ok(&[Requirement::Tag("foo")][..])
+    );
+    // !foo
+    assert_eq!(
+        parse(&[Token::Not, Token::Tag("foo")]).as_deref(),
+        Ok(&[Requirement::Not(Box::new(Requirement::Tag("foo")))][..])
     );
     // foo bar baz
     assert_eq!(
@@ -173,6 +181,50 @@ fn test_parse() {
                             })
                         ]
                     })
+                ]
+            }),
+            Requirement::Tag("foo-tag")
+        ][..])
+    );
+    // @any[a !@all[b !c !@foo[d e]]] foo-tag
+    assert_eq!(
+        parse(&[
+            Token::FunIdent("any"),
+            Token::LBracket,
+            Token::Tag("a"),
+            Token::Not,
+            Token::FunIdent("all"),
+            Token::LBracket,
+            Token::Tag("b"),
+            Token::Not,
+            Token::Tag("c"),
+            Token::Not,
+            Token::FunIdent("foo"),
+            Token::LBracket,
+            Token::Tag("d"),
+            Token::Tag("e"),
+            Token::RBracket,
+            Token::RBracket,
+            Token::RBracket,
+            Token::Tag("foo-tag"),
+        ])
+        .as_deref(),
+        Ok(&[
+            Requirement::FnCall(FnCall {
+                name: "any",
+                params: vec![
+                    Requirement::Tag("a"),
+                    Requirement::Not(Box::new(Requirement::FnCall(FnCall {
+                        name: "all",
+                        params: vec![
+                            Requirement::Tag("b"),
+                            Requirement::Not(Box::new(Requirement::Tag("c"))),
+                            Requirement::Not(Box::new(Requirement::FnCall(FnCall {
+                                name: "foo",
+                                params: vec![Requirement::Tag("d"), Requirement::Tag("e"),]
+                            })))
+                        ]
+                    })))
                 ]
             }),
             Requirement::Tag("foo-tag")

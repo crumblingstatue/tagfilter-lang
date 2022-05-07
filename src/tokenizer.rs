@@ -10,6 +10,8 @@ pub enum Token<'a> {
     LBracket,
     /// `]`
     RBracket,
+    /// `!`
+    Not,
 }
 
 enum Status {
@@ -34,6 +36,9 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 }
                 b']' => {
                     tokens.push(Token::RBracket);
+                }
+                b'!' => {
+                    tokens.push(Token::Not);
                 }
                 c if c.is_ascii_whitespace() => {}
                 _ => {
@@ -79,9 +84,19 @@ pub fn tokenize(input: &str) -> Vec<Token> {
 #[test]
 fn test_tokenize() {
     assert_eq!(&tokenize("foo"), &[Token::Tag("foo")]);
+    assert_eq!(&tokenize("!foo"), &[Token::Not, Token::Tag("foo")]);
     assert_eq!(
         &tokenize("foo bar baz"),
         &[Token::Tag("foo"), Token::Tag("bar"), Token::Tag("baz")]
+    );
+    assert_eq!(
+        &tokenize("foo !bar baz"),
+        &[
+            Token::Tag("foo"),
+            Token::Not,
+            Token::Tag("bar"),
+            Token::Tag("baz")
+        ]
     );
     assert_eq!(&tokenize("@any"), &[Token::FunIdent("any")]);
     assert_eq!(

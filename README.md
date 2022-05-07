@@ -10,16 +10,29 @@ It consists of zero or more *requirements*, all of which must match.
 
 
 ### requirement
-A requirement can either be a *tag*, or a *function call*
+A requirement can either be a *tag*, a *negation*, or a *function call*
 
 ### tag
-a tag can be anything that doesn't begin with the character `@`, and doesn't contain any spaces or `[`/`]`.
+a tag can be anything that doesn't begin with the characters `@` or `!`,
+and doesn't contain any spaces or `[`/`]`.
+
 Valid examples:
 ```
 hello-world
 hello@i@am@a@tag
 brick(character)
 2
+```
+
+### negation
+`!` followed by a requirement negates that requirement.
+
+Examples:
+```
+# Matches anything that isn't tagged foo
+!foo
+# Matches anything that isn't tagged both foo and bar
+!@all(foo bar)
 ```
 
 ### function call
@@ -34,6 +47,8 @@ Functions are defined by the application that embeds tagfilter-lang.
 ```
 # Matches the tag bicycle
 bicycle
+# Matches everything that isn't tagged bicycle
+!bicycle
 # Must match either foo or bar, and also it has to match baz
 @any[foo bar] baz
 # Matches either a cat, or a dog with a stick
