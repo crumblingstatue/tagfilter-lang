@@ -8,10 +8,10 @@ use crate::tokenizer::Token;
 #[derive(Debug, Error, PartialEq)]
 pub enum ParseError<'a> {
     /// An unexpected token was encountered
-    #[error("Unexpected token .0")]
+    #[error("Unexpected token {0:?}")]
     UnexpectedToken(Token<'a>),
     /// Expected a specific token, but got another one (or none)
-    #[error("Mismatch: expected .expected got .got")]
+    #[error("Mismatch: expected {expected:?} got {got:?}")]
     Mismatch {
         /// The token we expected
         expected: Token<'a>,
