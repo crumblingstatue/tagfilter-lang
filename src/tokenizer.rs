@@ -64,7 +64,6 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 }
             }
             Status::Tag { exact } => {
-                dbg!(exact);
                 if byte.is_ascii_whitespace() || matches!(byte, b'[' | b']') {
                     let tok = if exact {
                         Token::TagExact(&input[begin..pos])
