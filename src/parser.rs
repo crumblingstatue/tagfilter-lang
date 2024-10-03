@@ -28,6 +28,8 @@ pub enum ParseError<'a> {
 pub enum Requirement<'a> {
     /// Tag requirement like `foo`
     Tag(&'a str),
+    /// `$mytag` should be matched exactly (no implies-relationship)
+    TagExact(&'a str),
     /// Function call requirement like `@myfun[param1 param2]`
     FnCall(FnCall<'a>),
     /// Negate the results of the child requirement
@@ -63,6 +65,7 @@ fn parse_requirement<'tvec, 'src: 'tvec>(
         Some(tok) => match tok {
             Token::FunIdent(name) => Ok(Requirement::FnCall(parse_fn_call(name, tokens)?)),
             Token::Tag(name) => Ok(Requirement::Tag(name)),
+            Token::TagExact(name) => Ok(Requirement::TagExact(name)),
             Token::Not => Ok(Requirement::Not(Box::new(parse_requirement(tokens)?))),
             tok @ (Token::LBracket | Token::RBracket) => Err(ParseError::UnexpectedToken(*tok)),
         },

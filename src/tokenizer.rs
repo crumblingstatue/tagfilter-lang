@@ -6,6 +6,8 @@ pub enum Token<'a> {
     FunIdent(&'a str),
     /// A tag, e.g. `forest` or `cool-stuff`
     Tag(&'a str),
+    /// `$mytag` should be matched exactly (no implies-relationship)
+    TagExact(&'a str),
     /// `[`
     LBracket,
     /// `]`
@@ -17,7 +19,7 @@ pub enum Token<'a> {
 enum Status {
     Init,
     FunIdent,
-    Tag,
+    Tag { exact: bool },
 }
 
 pub fn tokenize(input: &str) -> Vec<Token> {
@@ -40,10 +42,14 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                 b'!' => {
                     tokens.push(Token::Not);
                 }
+                b'$' => {
+                    begin = pos + 1;
+                    status = Status::Tag { exact: true };
+                }
                 c if c.is_ascii_whitespace() => {}
                 _ => {
                     begin = pos;
-                    status = Status::Tag;
+                    status = Status::Tag { exact: false };
                 }
             },
             Status::FunIdent => {
@@ -57,9 +63,15 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                     };
                 }
             }
-            Status::Tag => {
+            Status::Tag { exact } => {
+                dbg!(exact);
                 if byte.is_ascii_whitespace() || matches!(byte, b'[' | b']') {
-                    tokens.push(Token::Tag(&input[begin..pos]));
+                    let tok = if exact {
+                        Token::TagExact(&input[begin..pos])
+                    } else {
+                        Token::Tag(&input[begin..pos])
+                    };
+                    tokens.push(tok);
                     status = Status::Init;
                     match byte {
                         b'[' => tokens.push(Token::LBracket),
@@ -74,11 +86,38 @@ pub fn tokenize(input: &str) -> Vec<Token> {
     match status {
         Status::Init => {}
         Status::FunIdent => tokens.push(Token::FunIdent(&input[begin..])),
-        Status::Tag => {
-            tokens.push(Token::Tag(&input[begin..]));
+        Status::Tag { exact } => {
+            let tok = if exact {
+                Token::TagExact(&input[begin..])
+            } else {
+                Token::Tag(&input[begin..])
+            };
+            tokens.push(tok);
         }
     }
     tokens
+}
+
+#[test]
+fn exact() {
+    assert_eq!(&tokenize("$foo"), &[Token::TagExact("foo")]);
+    assert_eq!(&tokenize("!$foo"), &[Token::Not, Token::TagExact("foo")]);
+    assert_eq!(
+        &tokenize("$foo $bar $baz"),
+        &[
+            Token::TagExact("foo"),
+            Token::TagExact("bar"),
+            Token::TagExact("baz")
+        ]
+    );
+    assert_eq!(
+        &tokenize("$foo bar $baz"),
+        &[
+            Token::TagExact("foo"),
+            Token::Tag("bar"),
+            Token::TagExact("baz")
+        ]
+    );
 }
 
 #[test]

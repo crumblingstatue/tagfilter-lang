@@ -31,7 +31,7 @@ impl Db {
 
 fn req_matches(req: &Requirement, item: &Item) -> bool {
     match req {
-        Requirement::Tag(name) => item.tags.contains(name),
+        Requirement::Tag(name) | Requirement::TagExact(name) => item.tags.contains(name),
         Requirement::FnCall(call) => match call.name {
             "any" => call.params.iter().any(|req| req_matches(req, item)),
             "file" => call.params.get(0).map_or(false, |param| match param {
