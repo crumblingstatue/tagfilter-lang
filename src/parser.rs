@@ -1,8 +1,4 @@
-use std::iter::Peekable;
-
-use thiserror::Error;
-
-use crate::tokenizer::Token;
+use {crate::tokenizer::Token, std::iter::Peekable, thiserror::Error};
 
 #[cfg(test)]
 mod tests;
