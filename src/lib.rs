@@ -1,4 +1,5 @@
-#![warn(missing_docs)]
+#![warn(missing_docs, clippy::pedantic)]
+#![allow(clippy::missing_errors_doc)]
 #![doc = include_str!("../README.md")]
 
 mod parser;

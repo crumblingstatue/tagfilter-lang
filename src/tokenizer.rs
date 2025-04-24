@@ -60,7 +60,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                         b'[' => tokens.push(Token::LBracket),
                         b']' => tokens.push(Token::RBracket),
                         _ => {}
-                    };
+                    }
                 }
             }
             Status::Tag { exact } => {
@@ -76,7 +76,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
                         b'[' => tokens.push(Token::LBracket),
                         b']' => tokens.push(Token::RBracket),
                         _ => {}
-                    };
+                    }
                 }
             }
         }
