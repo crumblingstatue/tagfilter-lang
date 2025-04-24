@@ -34,7 +34,7 @@ fn req_matches(req: &Requirement, item: &Item) -> bool {
         Requirement::Tag(name) | Requirement::TagExact(name) => item.tags.contains(name),
         Requirement::FnCall(call) => match call.name {
             "any" => call.params.iter().any(|req| req_matches(req, item)),
-            "file" => call.params.get(0).map_or(false, |param| match param {
+            "file" => call.params.first().is_some_and(|param| match param {
                 Requirement::Tag(name) => item.filename.contains(name),
                 _ => false,
             }),
@@ -64,7 +64,7 @@ impl Default for Db {
 
 fn main() {
     let query = std::env::args().nth(1).unwrap_or_default();
-    println!("Query: '{}'", query);
+    println!("Query: '{query}'");
     let db = Db::default();
     for item in db.query(&query) {
         println!("{}: {}", item.filename, item.description);
